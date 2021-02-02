@@ -42,7 +42,7 @@ private:
     void GenerateDate();
     void GenerateMsgID();
 
-    void Print();
+    //void Print();
 };
 
 #endif // EMAIL_H
