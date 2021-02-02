@@ -1,12 +1,11 @@
 #ifndef SMTPCLIENT_H
 #define SMTPCLIENT_H
 
-#include <string>
 #include <openssl/ssl.h>
 
+#include <string>
+
 #include "email.h"
-
-
 
 class SMTPClient {
 public:
