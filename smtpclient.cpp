@@ -1,21 +1,20 @@
 #include "smtpclient.h"
 
+#include <arpa/inet.h>  //socket, htons
+#include <openssl/err.h>
+#include <string.h>     //memcpy
+#include <sys/socket.h> //socket, send, recv, sockaddr
+#include <sys/types.h>  //socket, send, recv, sockaddr
+#include <netdb.h>      //hostent, gethostbyname
+#include <netinet/in.h> //sockaddr_in, htons
+#include <unistd.h>     //read
+
 #include <cassert>
 #include <cctype>       //std::isdigit
 #include <cstdlib>      //std::atoi
 #include <iostream>     //std::cerr
 
-#include <arpa/inet.h>  //socket, htons
-
-#include <openssl/err.h>
-#include <netdb.h>      //hostent, gethostbyname
-#include <netinet/in.h> //sockaddr_in, htons
-
-#include <sys/types.h>  //socket, send, recv, sockaddr
-#include <sys/socket.h> //socket, send, recv, sockaddr
-
-#include <string.h>     //memcpy
-#include <unistd.h>     //read
+#include "base64.h"
 
 constexpr int BUFF_SIZE = 512;
 
@@ -64,7 +63,7 @@ bool SMTPClient::SendMail(const Email mail) {
         return false;
     }
 
-    if(SendAndReadCode("quit\r\n") != 221) {
+    if (SendAndReadCode("quit\r\n") != 221) {
         std::cerr << "Server not bye\n";
         return false;
     }
@@ -73,7 +72,7 @@ bool SMTPClient::SendMail(const Email mail) {
 }
 
 bool SMTPClient::StartSSL() {
-    if(!InitCtx()) return false;
+    if (!InitCtx()) return false;
     ssl_socket_ = SSL_new(ctx_);
     SSL_set_fd(ssl_socket_, server_socket_);
     int state = SSL_connect(ssl_socket_);
@@ -127,8 +126,6 @@ bool SMTPClient::StartConnect() {
 
 bool SMTPClient::StartHandshake(const std::string domain) {
     const std::string EHLO = "EHLO <" + domain + ">\r\n";
-    const std::string LOGIN = login_ + "\r\n";
-    const std::string PASS = pass_ + "\r\n";
     if (ReadCode(SockRead()) != 220) {
         std::cerr << "Server not ready\n";
         return false;
@@ -155,12 +152,12 @@ bool SMTPClient::StartHandshake(const std::string domain) {
         return false;
     }
     //send login
-    if (SendAndReadCode(login_ + "\r\n") != 334) {
+    if (SendAndReadCode(BASE64::encode(login_) + "\r\n") != 334) {
         std::cerr << "Login no accept\n";
         return false;
     }
     //send pass
-    if (SendAndReadCode(pass_ + "\r\n") != 235) {
+    if (SendAndReadCode(BASE64::encode(pass_) + "\r\n") != 235) {
         std::cerr << "Authorization faild\n";
         return false;
     }
