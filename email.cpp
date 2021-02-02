@@ -1,12 +1,13 @@
 #include "email.h"
 
 #include <algorithm>  //for_each()
-#include <sstream>    //stringstream
+#include <cstdlib>    //std::srand, std::rand
+#include <ctime>      //std::time_t, std::time, std::tm, std::gmtime
+#include <functional> //std::hash
 #include <iomanip>    //std::setfill, std::setw, std::put_time
-#include <ctime>      //time, std::tm
-#include <random>
-#include <cstdlib>    //RAND_MAX rand();
 #include <ios>        //std::hex, std::dec
+#include <random>
+#include <sstream>    //std::stringstream
 
 Email::Email() {}
 
@@ -126,7 +127,7 @@ std::string Email::GetHexFromString(const std::string& number) const {
 
 void Email::GenerateDate() {
     std::stringstream ss;
-    time_t sec = time(NULL);
+    std::time_t sec = std::time(nullptr);
     std::tm* tm_ = std::gmtime(&sec);
     ss << std::put_time(tm_, "%a, %d %b %Y %T %z");
     date_ = ss.str();
@@ -149,6 +150,10 @@ void Email::GenerateMsgID() {
     ss << "@mail" << std::dec << std::rand() << "-" << std::rand() << "." << getDomain() << ">";
     ID_ = ss.str();
 }
+
+
+/* For test code, delete in future
+
 #include <iostream>
 void Email::Print() {
     std::cout << "Email created with members: \n"
@@ -163,3 +168,4 @@ void Email::Print() {
         std::cout << s << "|\n";
     }
 }
+*/
